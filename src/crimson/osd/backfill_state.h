@@ -62,6 +62,8 @@ struct BackfillState {
   struct CancelBackfill : sc::event<CancelBackfill> {
   };
 
+  struct ThrottleAcquired : sc::event<ThrottleAcquired> {
+  };
 private:
   // internal events
   struct RequestPrimaryScanning : sc::event<RequestPrimaryScanning> {
@@ -257,6 +259,7 @@ public:
       sc::transition<RequestDone, Done>,
       sc::custom_reaction<CancelBackfill>,
       sc::custom_reaction<Triggered>,
+      sc::transition<ThrottleAcquired, Enqueuing>,
       sc::transition<sc::event_base, Crashed>>;
     explicit Waiting(my_context);
     sc::result react(ObjectPushed);
@@ -289,6 +292,11 @@ public:
     const hobject_t &obj,
     const eversion_t &v,
     const std::vector<pg_shard_t> &peers);
+  void enqueue_standalone_delete(
+    const hobject_t &obj,
+    const eversion_t &v,
+    const std::vector<pg_shard_t> &peers);
+
 
   bool is_triggered() const {
     return backfill_machine.triggering_event() != nullptr;

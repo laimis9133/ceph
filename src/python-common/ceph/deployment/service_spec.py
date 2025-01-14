@@ -1231,6 +1231,7 @@ class RGWSpec(ServiceSpec):
                  rgw_bucket_counters_cache: Optional[bool] = False,
                  rgw_bucket_counters_cache_size: Optional[int] = None,
                  generate_cert: bool = False,
+                 disable_multisite_sync_traffic: Optional[bool] = None,
                  ):
         assert service_type == 'rgw', service_type
 
@@ -1283,6 +1284,8 @@ class RGWSpec(ServiceSpec):
         self.rgw_bucket_counters_cache_size = rgw_bucket_counters_cache_size
         #: Whether we should generate a cert/key for the user if not provided
         self.generate_cert = generate_cert
+        #: Used to make RGW not do multisite replication so it can dedicate to IO
+        self.disable_multisite_sync_traffic = disable_multisite_sync_traffic
 
     def get_port_start(self) -> List[int]:
         return [self.get_port()]
@@ -2328,6 +2331,7 @@ class AlertManagerSpec(MonitoringSpec):
                  user_data: Optional[Dict[str, Any]] = None,
                  config: Optional[Dict[str, str]] = None,
                  networks: Optional[List[str]] = None,
+                 only_bind_port_on_networks: bool = False,
                  port: Optional[int] = None,
                  secure: bool = False,
                  extra_container_args: Optional[GeneralArgList] = None,
@@ -2358,6 +2362,7 @@ class AlertManagerSpec(MonitoringSpec):
         #                        <webhook_configs> configuration.
         self.user_data = user_data or {}
         self.secure = secure
+        self.only_bind_port_on_networks = only_bind_port_on_networks
 
     def get_port_start(self) -> List[int]:
         return [self.get_port(), 9094]
@@ -2404,7 +2409,7 @@ class GrafanaSpec(MonitoringSpec):
         self.protocol = protocol
 
         # whether ports daemons for this service bind to should
-        # bind to only hte networks listed in networks param, or
+        # bind to only the networks listed in networks param, or
         # to all networks. Defaults to false which is saying to bind
         # on all networks.
         self.only_bind_port_on_networks = only_bind_port_on_networks

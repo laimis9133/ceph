@@ -1472,6 +1472,14 @@ Usage:
 
         return HandleCommandResult(stdout=out)
 
+    @_cli_write_command('orch osd set-spec-affinity')
+    def _osd_set_spec(self, service_name: str, osd_id: List[str]) -> HandleCommandResult:
+        """Set service spec affinity for osd"""
+        completion = self.set_osd_spec(service_name, osd_id)
+        res = raise_if_exception(completion)
+
+        return HandleCommandResult(stdout=res)
+
     @_cli_write_command('orch daemon add')
     def daemon_add_misc(self,
                         daemon_type: Optional[ServiceType] = None,
@@ -1666,7 +1674,13 @@ Usage:
             specs: List[Union[ServiceSpec, HostSpec]] = []
             # YAML '---' document separator with no content generates
             # None entries in the output. Let's skip them silently.
-            content = [o for o in yaml_objs if o is not None]
+            try:
+                content = [o for o in yaml_objs if o is not None]
+            except yaml.scanner.ScannerError as e:
+                msg = f"Invalid YAML received : {str(e)}"
+                self.log.exception(msg)
+                return HandleCommandResult(-errno.EINVAL, stderr=msg)
+
             for s in content:
                 try:
                     spec = json_to_generic_spec(s)
@@ -2191,7 +2205,13 @@ Usage:
             specs: List[TunedProfileSpec] = []
             # YAML '---' document separator with no content generates
             # None entries in the output. Let's skip them silently.
-            content = [o for o in yaml_objs if o is not None]
+            try:
+                content = [o for o in yaml_objs if o is not None]
+            except yaml.scanner.ScannerError as e:
+                msg = f"Invalid YAML received : {str(e)}"
+                self.log.exception(msg)
+                return HandleCommandResult(-errno.EINVAL, stderr=msg)
+
             for spec in content:
                 specs.append(TunedProfileSpec.from_json(spec))
         else:

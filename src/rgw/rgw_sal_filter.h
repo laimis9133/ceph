@@ -108,9 +108,6 @@ public:
   virtual bool get_redirect_endpoint(std::string* endpoint) override {
       return next->get_redirect_endpoint(endpoint);
   }
-  virtual bool has_zonegroup_api(const std::string& api) const override {
-      return next->has_zonegroup_api(api);
-  }
   virtual const std::string& get_current_period_id() override {
       return next->get_current_period_id();
   }
@@ -780,6 +777,12 @@ public:
   virtual void invalidate() override { return next->invalidate(); }
   virtual bool empty() const override { return next->empty(); }
   virtual const std::string &get_name() const override { return next->get_name(); }
+
+  /** If multipart, enumerate (a range [marker..marker+[min(max_parts, parts_count-1)] of) parts of the object */
+  virtual int list_parts(const DoutPrefixProvider* dpp, CephContext* cct,
+			 int max_parts, int marker, int* next_marker,
+			 bool* truncated, list_parts_each_t each_func,
+			 optional_yield y) override;
 
   virtual int load_obj_state(const DoutPrefixProvider *dpp, optional_yield y,
                              bool follow_olh = true) override;
