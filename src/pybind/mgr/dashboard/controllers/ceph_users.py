@@ -217,7 +217,10 @@ edit_form = Form(path='/cluster/user/edit',
     extra_endpoints=[
         ('export', CRUDCollectionMethod(
             func=RESTController.Collection('POST', 'export')(CephUserEndpoints.export),
-            doc=EndpointDoc("Export Ceph Users")
+            doc=EndpointDoc("Export Ceph Users",
+                parameters={
+                    "entity": Param(List[str], "List of entities to export")
+                })
         ))
     ],
     selection_type=SelectionType.MULTI,

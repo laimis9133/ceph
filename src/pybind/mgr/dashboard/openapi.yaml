@@ -3883,7 +3883,9 @@ paths:
             schema:
               properties:
                 entities:
-                  type: string
+                  type: array
+                  items:
+                    type: string
               required:
               - entities
               type: object
